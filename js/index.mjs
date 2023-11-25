@@ -7,12 +7,12 @@ export const handler = async (event, context) => {
   const params = {
     TableName: process.env.tableName,
     Item: {
-      id: { S: "asdb" },
-      emailaddress: { S: "testing@gmail.com" },
+      id: { S: "ramyuayuuuu" },
+      emailaddress: { S: "ramuuu@gmail.com" },
     },
   };
 
-uploadToGCP ("https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip")
+  uploadToGCP ("https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip")
   const command = new PutItemCommand(params);
   try {
     const data = await ddb.send(command);

@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "arcane-transit-406119",
+  "private_key_id": "13e182c17f7b41169429fb06e26655f612d05003",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDUDpwcio/GJYz3\nM6qN4VZ37/ls2aveIOIRinZEg2j7B7oRcQLDcUndUsYf5OnoLgYiLt1KH/Bm/PgG\nm+GwEHDeAuLpFWBgXHPhhl+bkTh2SQ21VYb3N6WJQfOaD4LbLJkzCzfIjY+AD2DX\nNrk/kUZc5FrVVQGPi/W7V7IfLW4SlsVW+Ch8iJALggGuprAjVSUIZKsSKercfYdN\nmygEv7+xqcSRSun2VvaD5ion8X6+YnEyCSNiYMeLcHizabwEZuQCAQg9vCFdbWbn\nUk7Jd0AQxetn7HLvmLuGeZl+D/zmv4t/MOSjk57o4NgxT6DJfw+6zkcakAeA3IpE\nJV8uwlrzAgMBAAECggEACgEhP75DxGZLuiZPj7KhXzaZof27Yr2F0BKkIl0mxa0a\ni+C078T3Zj/8K+k88qDCCYVqsdwQffNfI9F7FAQUJxoKW+yPwVjeeLXbt3dIkcAM\nxWpvDyVd1tXSaQkxTcDS/q1mHAnQ5HEVSwhmzfpyUBPP7nLWIeni/BjJ+Df7xb50\nPWondiuxSBrS1FB5dE6cdktHzWKiPr6y2DFdOZm68mLIgMSoMNsebKB/p0JmdjTg\nPh9k/VjmIeNCgYIGaKld33iGwcMdsJfWrOPmbhTZ8Q+Im43f1Vz57YfAtw1WH9O0\nzi+epaQ334RXIvmDcgDhLkEK/ioHFoR+pHCijpRiaQKBgQDr884qe31iMPim1sBs\nHjMJ9izCPaS5+0szoPCPIySjDb+17UpMJaIw7jugkTpc3+p3kBW1F4z6LhrhCY59\nO/Qj3oxVZCMcE61/K7yW3xiT/deO0ndD9qS9/ajo0SG65Xu87jK/XGwObeRjsyb5\nAnwSi86e6GOwvSf1FVxMBwH82QKBgQDmEw72APsx6TMPnoEZQcbO3Uhi6soohvgW\nnMblTkn3h4Muz7B9KtaQGi5LPv7sf11rBfEWLz+ln4XdFUqOXlqtuKoTV7EHCMsE\n6HRdue1FgQldR8M2XxUVxt+GCv35gsxYQAgi8CEnmTsUCHePKzGnmhHcNV4SHR6K\nlxQSlTBmqwKBgHN3CNHjQpV1j4jdmKaQFLvwOzEGx4C3x7JJNM9nDDu6s7FMoMoo\ntHkrbASEbUIb1XqTCPxovPWE8GRlr9P7LdsLwjLbYQ8RVhrghVZzcGyjkQP0XKbm\noPHUmv7rsIzsViQ7kJvyl3JsNpLPjefXXm4Y+pDq+jX4KwCVZmhSGZfpAoGBALn9\nACQoKOhxHwDqXmx/euqxgZnNOb1HVnhZJoQqJKtAVfDank6g+bCmKXRUqZmfYHJq\n7DjF20rVSU6uroWmiuFSndJjGk2Ycx41mBRIgCGmrV5F6+4hMRdYnEtsyWERtoVE\nxg8QVY0AVvzb12LaRRq69uMwFSrJdW4NsYFQLz9fAoGBAOkds7mvOas9JIdl7EQk\nvmuPk95SqniWiL6VVoemLyk/9eyFUX6x6sLQc4gPbPDZkI99zpZJbBHQJ0yA2sIi\nlmTGiohy8n6BqmJ0D/Db753G/zuZRL0VXtU1oQ1ecXjaEbcavNC70LdRHvyOzg7/\nTVx21QrPHqDJ55zHOm5aFx59\n-----END PRIVATE KEY-----\n",
+  "client_email": "ramya-bucket-sa@arcane-transit-406119.iam.gserviceaccount.com",
+  "client_id": "100222055369445800431",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/ramya-bucket-sa%40arcane-transit-406119.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
