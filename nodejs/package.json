@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@google-cloud/storage": "^7.6.0",
+    "node-fetch": "^3.3.2"
+  }
+}
