@@ -6,7 +6,6 @@ exports.handler = async function (event, context) {
 
   const ddb = new DynamoDBClient({ region: "us-east-1" });
 
-  console.log("********** IN HANDLER **********");
   const params = {
     TableName: process.env.tableName,
     Item: {
@@ -17,11 +16,9 @@ exports.handler = async function (event, context) {
 
   const command = new PutItemCommand(params);
   try {
-    console.log("------- INSERTING ------");
     const data = await ddb.send(command);
     console.log("Item added: ", data);
   } catch (err) {
-    console.log("------- ERRRRORRRRRRR ------");
     console.error(err);
   }
 };
