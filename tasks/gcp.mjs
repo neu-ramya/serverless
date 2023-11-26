@@ -92,11 +92,11 @@ async function downloadGitHubRelease(fileUrl, destinationPath) {
   }
 }
 
-async function uploadToGCP(downloadURL) {
+async function uploadToGCP(downloadURL, email) {
   console.log('2. Starting upload to GCP');
   try {
     const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME);
-    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'gowtham.uj@gmail.com', 'assign10/newcode.zip');
+    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, email, 'assign10/newcode.zip');
   } catch (error) {
     console.error(error);
     throw error;
