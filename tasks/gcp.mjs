@@ -32,7 +32,7 @@ async function updateDynamoDB(emailID) {
   }
 }
 
-async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, gcpDestinationPath) {
+async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email, gcpDestinationPath) {
   console.log('5. Starting move to GCP');
 
   const storage = new Storage({ projectId, keyFilename });
@@ -57,9 +57,9 @@ async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, gcpDe
           console.log('7. finishing GCP upload');
           console.log(`File uploaded to: gs://${bucketName}/${gcpDestinationPath}`);
           try {
-            await sendEmail('gowtham.uj+new@gmail.com');
+            await sendEmail(email);
             console.log('10. Starting update to DynamoDB');
-            await updateDynamoDB('gowtham.uj@gmail.com');
+            await updateDynamoDB(email);
             console.log('NN. Dynamo successfully resolved');
             resolve();
           } catch (error) {
@@ -92,11 +92,11 @@ async function downloadGitHubRelease(fileUrl, destinationPath) {
   }
 }
 
-async function uploadToGCP(fileUrl) {
+async function uploadToGCP(downloadURL) {
   console.log('2. Starting upload to GCP');
   try {
-    const downloadedZipFilePath = await downloadGitHubRelease(fileUrl, LOCAL_ZIP_FILE_NAME);
-    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'assign10/newcode.zip');
+    const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME);
+    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'gowtham.uj@gmail.com', 'assign10/newcode.zip');
   } catch (error) {
     console.error(error);
     throw error;
