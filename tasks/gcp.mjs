@@ -1,78 +1,68 @@
-import https from "https";
-import fs from "fs";
-import path from 'path';
-
-
 import { Storage } from '@google-cloud/storage';
+import axios from 'axios';
+import fs from 'fs';
+import sendEmail from './mailgun.mjs'
 
-const bucketName = 'ramya-csye6225';
-const projectId = 'arcane-transit-406119';
-const gcsKey = './gcp.json';
+const LOCAL_ZIP_FILE_NAME = '/tmp/downloaded.zip';
+const BUCKET_NAME = 'ramya-csye6225';
+const PROJECT_ID = 'arcane-transit-406119';
+const GCP_KEY = './gcp.json';
 
-const localZipFileName = '/tmp/assign.zip'
+async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, gcpDestinationPath) {
+  const storage = new Storage({ projectId, keyFilename });
+  const bucket = storage.bucket(bucketName);
 
-const downloadFile = (url, dest) => {
-  const file = fs.createWriteStream(dest);
-
-  return new Promise((resolve, reject) => {
-    https.get(url, response => {
-      response.pipe(file);
-      file.on('finish', () => {
-        file.close(resolve);
-      });
-    }).on('error', error => {
-      fs.unlink(dest, () => reject(error));
+  try {
+    const fileStream = fs.createReadStream(filePath);
+    const file = bucket.file(gcpDestinationPath);
+    const stream = file.createWriteStream({
+      metadata: {
+        contentType: 'application/zip',
+      },
     });
-  });
-};
 
-const createDestinationDirectory = (filePath) => {
-  const directory = path.dirname(filePath);
-  if (!fs.existsSync(directory)) {
-    fs.mkdirSync(directory, { recursive: true });
+    await new Promise((resolve, reject) => {
+      fileStream.pipe(stream)
+        .on('error', (error) => {
+          reject(`Error uploading file: ${error.message}`);
+        })
+        .on('finish', () => {
+          console.log(`File uploaded to: gs://${bucketName}/${gcpDestinationPath}`);
+          sendEmail('gowtham.uj@gmail.com')
+          resolve();
+        });
+    });
+  } catch (error) {
+    console.error(`Error uploading file: ${error}`);
   }
-};
-
-async function uploadFile(bucketName, projectId, keyFilename, fileName) {
-  fileName = './some.md'
-  const storage = new Storage({ keyFilename: keyFilename });
-  const gcsBucket = storage.bucket(bucketName);
-  console.log("@@@@@@@@@@@@@@@@ UPLOAD @@@@@@@@@@@@@@@@")
-  gcsBucket.upload(
-    fileName,
-    {
-      destination: `assign9/some.md`,
-    },
-    function (err, file) {
-      if (err) {
-        console.log('------------- UPLOAD ERRROR !!!!!!!!!!!!!!!!!')
-        console.error(`Error uploading image image_to_upload.jpeg: ${err}`)
-      } else {
-        console.log(`Image image_to_upload.jpeg uploaded to ${bucketName}.`)
-      }
-    })
 }
 
-const downloadZipFile = async (fileUrl, destinationPath) => {
+async function downloadGitHubRelease(fileUrl, destinationPath) {
   try {
-    createDestinationDirectory(destinationPath);
-    await downloadFile(fileUrl, destinationPath);
-    console.log(`File downloaded to ${destinationPath}`);
+    const writer = fs.createWriteStream(destinationPath);
+    const fileResponse = await axios({
+      method: 'get',
+      url: fileUrl,
+      responseType: 'stream',
+    });
+
+    fileResponse.data.pipe(writer);
+
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => resolve(destinationPath));
+      writer.on('error', (error) => reject(`Error writing to file: ${error.message}`));
+    });
   } catch (error) {
-    console.error('Error:', error.message);
+    throw `Error downloading file: ${error.message}`;
   }
-};
+}
 
 async function uploadToGCP (fileUrl) {
   try {
-    console.log("*********** BEFORE DOWNLOAD *****************")
-    await downloadZipFile(fileUrl, localZipFileName);
-    console.log("*********** AFTER DOWNLOAD *****************")
-    await uploadFile(bucketName, projectId, gcsKey, localZipFileName);
-        console.log("*********** AFTER GCP UPLOAD CALL *****************")
-
+    let  downloadedZipFilePath = await downloadGitHubRelease(fileUrl, LOCAL_ZIP_FILE_NAME);
+    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'assign10/newcode.zip')
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error(error);
   }
 }
 

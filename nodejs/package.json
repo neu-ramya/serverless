@@ -1,6 +1,10 @@
 {
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.454.0",
     "@google-cloud/storage": "^7.6.0",
+    "aws-sdk": "^2.1502.0",
+    "axios": "^1.6.2",
+    "mailgun-js": "^0.22.0",
     "node-fetch": "^3.3.2"
   }
 }

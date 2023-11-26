@@ -12,12 +12,14 @@ export const handler = async (event, context) => {
     },
   };
 
-  uploadToGCP ("https://github.com/tparikh/myrepo/archive/refs/tags/v1.0.0.zip")
-  const command = new PutItemCommand(params);
-  try {
-    const data = await ddb.send(command);
-    console.log("Item added: ", data);
-  } catch (err) {
-    console.error(err);
-  }
+  uploadToGCP ("https://codeload.github.com/tparikh/myrepo/zip/refs/tags/v1.0.0")
+  // const command = new PutItemCommand(params);
+  // try {
+  //   const data = await ddb.send(command);
+  //   console.log("Item added: ", data);
+  // } catch (err) {
+  //   console.error(err);
+  // }
 };
+
+handler();
