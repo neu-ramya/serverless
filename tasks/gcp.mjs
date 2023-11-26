@@ -1,14 +1,40 @@
 import { Storage } from '@google-cloud/storage';
 import axios from 'axios';
 import fs from 'fs';
-import sendEmail from './mailgun.mjs'
+import { promises as fsPromises } from 'fs';
+import sendEmail from './mailgun.mjs';
+import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
+const ddb = new DynamoDBClient({ region: "us-east-1" });
 const LOCAL_ZIP_FILE_NAME = '/tmp/downloaded.zip';
 const BUCKET_NAME = 'ramya-csye6225';
 const PROJECT_ID = 'arcane-transit-406119';
 const GCP_KEY = './gcp.json';
 
+async function updateDynamoDB(emailID) {
+  const params = {
+    TableName: process.env.tableName,
+    Item: {
+      id: { S: "12871974129" },
+      emailaddress: { S: emailID },
+    },
+  };
+
+  const command = new PutItemCommand(params);
+  try {
+    console.log('11. Insert Into DynamoDB');
+    const ddbData = await ddb.send(command);
+    console.log("Item added: ", ddbData);
+    return ddbData;
+  } catch (err) {
+    console.error(err);
+    throw err;
+  }
+}
+
 async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, gcpDestinationPath) {
+  console.log('5. Starting move to GCP');
+
   const storage = new Storage({ projectId, keyFilename });
   const bucket = storage.bucket(bucketName);
 
@@ -22,47 +48,58 @@ async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, gcpDe
     });
 
     await new Promise((resolve, reject) => {
+      console.log('6. Starting filestream');
       fileStream.pipe(stream)
         .on('error', (error) => {
           reject(`Error uploading file: ${error.message}`);
         })
-        .on('finish', () => {
+        .on('finish', async () => {
+          console.log('7. finishing GCP upload');
           console.log(`File uploaded to: gs://${bucketName}/${gcpDestinationPath}`);
-          sendEmail('gowtham.uj@gmail.com')
-          resolve();
+          try {
+            await sendEmail('gowtham.uj+new@gmail.com');
+            console.log('10. Starting update to DynamoDB');
+            await updateDynamoDB('gowtham.uj@gmail.com');
+            console.log('NN. Dynamo successfully resolved');
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
         });
     });
   } catch (error) {
     console.error(`Error uploading file: ${error}`);
+    throw error;
   }
 }
 
 async function downloadGitHubRelease(fileUrl, destinationPath) {
+  console.log('3. Starting download of zip file');
+
   try {
-    const writer = fs.createWriteStream(destinationPath);
-    const fileResponse = await axios({
+    const response = await axios({
       method: 'get',
       url: fileUrl,
-      responseType: 'stream',
+      responseType: 'arraybuffer',
     });
 
-    fileResponse.data.pipe(writer);
+    await fsPromises.writeFile(destinationPath, Buffer.from(response.data));
 
-    return new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(destinationPath));
-      writer.on('error', (error) => reject(`Error writing to file: ${error.message}`));
-    });
+    console.log('4. Finishing download of zip file');
+    return destinationPath;
   } catch (error) {
     throw `Error downloading file: ${error.message}`;
   }
 }
 
-async function uploadToGCP (fileUrl) {
+async function uploadToGCP(fileUrl) {
+  console.log('2. Starting upload to GCP');
   try {
-    let  downloadedZipFilePath = await downloadGitHubRelease(fileUrl, LOCAL_ZIP_FILE_NAME);
-    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'assign10/newcode.zip')
+    const downloadedZipFilePath = await downloadGitHubRelease(fileUrl, LOCAL_ZIP_FILE_NAME);
+    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, 'assign10/newcode.zip');
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 
