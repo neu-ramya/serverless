@@ -19,5 +19,3 @@ export const handler = async (event, context) => {
     console.error("Error in handler:", error);
   }
 };
-
-handler()
