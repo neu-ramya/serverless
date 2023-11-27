@@ -7,8 +7,8 @@ import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
 
 const ddb = new DynamoDBClient({ region: "us-east-1" });
 const LOCAL_ZIP_FILE_NAME = '/tmp/downloaded.zip';
-const BUCKET_NAME = 'ramya-dev-bucket-f06f4ad';
-const PROJECT_ID = 'csye-dev-406304';
+const BUCKET_NAME = process.env.gcpBucketName;
+const PROJECT_ID = process.env.gcpProjectID;
 const GCP_KEY = '/tmp/gcp.json';
 
 async function updateDynamoDB(emailID) {
@@ -84,22 +84,8 @@ async function downloadGitHubRelease(fileUrl, destinationPath) {
     });
 
     await fsPromises.writeFile(destinationPath, Buffer.from(response.data));
-
     console.log('4. Finishing download of zip file');
-        console.log('---- BEFORE PROCESS STARTS VALUE OF ENV FILE ----');
-    const directoryPath = '/tmp';
 
-    fs.readdir(directoryPath, (err, files) => {
-      if (err) {
-        console.error(`Error reading directory: ${err}`);
-        return;
-      }
-    
-      console.log('Files in the directory:');
-      files.forEach(file => {
-        console.log(file);
-      });
-    });
     return destinationPath;
   } catch (error) {
     throw `Error downloading file: ${error.message}`;

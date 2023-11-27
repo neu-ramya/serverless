@@ -1,7 +1,7 @@
 import mailgun from 'mailgun-js';
 
 const mg = mailgun({
-  apiKey: 'a039b8e55885211cee0acf28fafe3076-5d2b1caa-a42912d1',
+  apiKey: process.env.mailgunAPIKey,
   domain: 'ramyadevie.me',
 });
 
