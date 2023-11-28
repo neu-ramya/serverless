@@ -31,17 +31,21 @@ export const handler = async (event, context) => {
       message = JSON.parse(record.Sns.Message);
     });
 
+    
+
     console.log("1. Starting handler");
     let downloadURL = message.url;
     let email = message.email;
-    let assignmentName = message.assignmentName;
-    let assignmentId = message.assignmentID;
-    let attempt = message.attempt;
     let assignmentDetails = {
-      id: assignmentId,
-      attempt: attempt,
-      name: assignmentName
+      id: message.assignmentID,
+      attempt: message.attempt,
+      name: message.assignmentName
     }
+
+    console.log('-----------------')
+    console.log(message)
+    console.log(assignmentDetails)
+    console.log('-----------------')
 
     const gcpResponse = await uploadToGCP(downloadURL, email, assignmentDetails);
     console.log('COMPLETING LAMBDA EXECUTION');
