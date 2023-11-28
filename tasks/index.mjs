@@ -34,8 +34,16 @@ export const handler = async (event, context) => {
     console.log("1. Starting handler");
     let downloadURL = message.url;
     let email = message.email;
+    let assignmentName = message.assignmentName;
+    let assignmentId = message.assignmentID;
+    let attempt = message.attempt;
+    let assignmentDetails = {
+      id: assignmentId,
+      attempt: attempt,
+      name: assignmentName
+    }
 
-    const gcpResponse = await uploadToGCP(downloadURL, email);
+    const gcpResponse = await uploadToGCP(downloadURL, email, assignmentDetails);
     console.log('COMPLETING LAMBDA EXECUTION');
   } catch (error) {
     console.error("Error in handler:", error);

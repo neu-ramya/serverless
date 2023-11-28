@@ -5,19 +5,19 @@ const mg = mailgun({
   domain: 'ramyadevie.me',
 });
 
-async function getMailData(from, to, subject, body) {
+async function sendMailgunEmail(to, template, variables) {
   return {
-    from: from,
     to: to,
-    subject: subject,
-    text: body,
+    from: 'noreply@ramyadevie.me',
+    template: template,
+    'h:X-Mailgun-Variables': JSON.stringify(variables),
   };
 }
 
-async function sendEmail(to) {
+async function sendEmail(to, template, variables) {
   console.log('8. Sending email');
   try {
-    const mailData = await getMailData('Ramya Devie <noreply@ramyadevie.me>', to, "Assignment submission email", 'Your zip file is uploaded \n This is needed to work.');
+    const mailData = await sendMailgunEmail(to, template, variables);
 
     await mg.messages().send(mailData);
     console.log('9. resolving email send');

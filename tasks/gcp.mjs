@@ -11,12 +11,14 @@ const BUCKET_NAME = process.env.gcpBucketName;
 const PROJECT_ID = process.env.gcpProjectID;
 const GCP_KEY = '/tmp/gcp.json';
 
-async function updateDynamoDB(emailID) {
+async function updateDynamoDB(emailID, assignmentDetails, status) {
   const params = {
     TableName: process.env.tableName,
     Item: {
-      id: { S: "12871974129" },
       emailaddress: { S: emailID },
+      assignmentAttempt: { N: assignmentDetails.attempt},
+      assignmentNumber:  { S: assignmentDetails.id},
+      emailSent: { B: status},
     },
   };
 
@@ -32,7 +34,9 @@ async function updateDynamoDB(emailID) {
   }
 }
 
-async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email, gcpDestinationPath) {
+async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email, assignmentDetails) {
+  let newBucketPath = `${assignmentDetails.name}/${assignmentDetails.id}/${email}/${assignmentDetails.attempt}/submission.zip`
+
   console.log('5. Starting move to GCP');
 
   const storage = new Storage({ projectId, keyFilename });
@@ -40,7 +44,7 @@ async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email
 
   try {
     const fileStream = fs.createReadStream(filePath);
-    const file = bucket.file(gcpDestinationPath);
+    const file = bucket.file(newBucketPath);
     const stream = file.createWriteStream({
       metadata: {
         contentType: 'application/zip',
@@ -50,30 +54,37 @@ async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email
     await new Promise((resolve, reject) => {
       console.log('6. Starting filestream');
       fileStream.pipe(stream)
-        .on('error', (error) => {
+        .on('error', async (error) => {
+          await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
           reject(`Error uploading file: ${error.message}`);
         })
         .on('finish', async () => {
           console.log('7. finishing GCP upload');
-          console.log(`File uploaded to: gs://${bucketName}/${gcpDestinationPath}`);
+          console.log(`File uploaded to: gs://${bucketName}/${newBucketPath}`);
           try {
-            await sendEmail(email);
+            await sendEmail(email, 'successful-download', {assignmentNumber: assignmentDetails.name, bucketPath: `gs://${bucketName}/${gcpDestinationPath}`});
             console.log('10. Starting update to DynamoDB');
-            await updateDynamoDB(email);
+          } catch(errror){
+            await updateDynamoDB(email, assignmentDetails, false);
+          }
+          try {
+            await updateDynamoDB(email, assignmentDetails, true);
             console.log('NN. Dynamo successfully resolved');
             resolve();
           } catch (error) {
+            await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
             reject(error);
           }
         });
     });
   } catch (error) {
+    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
     console.error(`Error uploading file: ${error}`);
     throw error;
   }
 }
 
-async function downloadGitHubRelease(fileUrl, destinationPath) {
+async function downloadGitHubRelease(fileUrl, destinationPath, email, assignmentDetails) {
   console.log('3. Starting download of zip file');
 
   try {
@@ -84,20 +95,32 @@ async function downloadGitHubRelease(fileUrl, destinationPath) {
     });
 
     await fsPromises.writeFile(destinationPath, Buffer.from(response.data));
+    try {
+      const stats = await fsPromises.stat(destinationPath);
+      if(stats.size === 0){
+        await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
+      }
+    } catch (error) {
+      console.error(`Error checking file size: ${error.message}`);
+      return false; // Return false if there's an error (file not found, permission issue, etc.)
+    }
+  
     console.log('4. Finishing download of zip file');
 
     return destinationPath;
   } catch (error) {
+    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
     throw `Error downloading file: ${error.message}`;
   }
 }
 
-async function uploadToGCP(downloadURL, email) {
+async function uploadToGCP(downloadURL, email, assignmentDetails) {
   console.log('2. Starting upload to GCP');
   try {
-    const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME);
-    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, email, 'assign10/newcode.zip');
+    const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME, email, assignmentDetails);
+    await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, email, assignmentDetails);
   } catch (error) {
+    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
     console.error(error);
     throw error;
   }
