@@ -1,6 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import axios from 'axios';
 import fs from 'fs';
+const { v4: uuidv4 } = require('uuid');
 import { promises as fsPromises } from 'fs';
 import sendEmail from './mailgun.mjs';
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
@@ -15,6 +16,7 @@ async function updateDynamoDB(emailID, assignmentDetails, status) {
   const params = {
     TableName: process.env.tableName,
     Item: {
+      id: uuidv4(), 
       emailaddress: { S: emailID },
       assignmentAttempt: { N: assignmentDetails.attempt},
       assignmentNumber:  { S: assignmentDetails.id},
