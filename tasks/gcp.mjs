@@ -110,6 +110,7 @@ async function downloadGitHubRelease(fileUrl, destinationPath, email, assignment
 
     return destinationPath;
   } catch (error) {
+    await updateDynamoDB(email, assignmentDetails, 'unable-to-download');
     throw `Error downloading file: ${error.message}`;
   }
 }
