@@ -1,7 +1,7 @@
 import { Storage } from '@google-cloud/storage';
 import axios from 'axios';
 import fs from 'fs';
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 import { promises as fsPromises } from 'fs';
 import sendEmail from './mailgun.mjs';
 import { DynamoDBClient, PutItemCommand } from "@aws-sdk/client-dynamodb";
@@ -13,14 +13,15 @@ const PROJECT_ID = process.env.gcpProjectID;
 const GCP_KEY = '/tmp/gcp.json';
 
 async function updateDynamoDB(emailID, assignmentDetails, status) {
+  let uid = uuidv4()
   const params = {
     TableName: process.env.tableName,
     Item: {
-      id: uuidv4(), 
+      id: { S: uid }, 
       emailaddress: { S: emailID },
-      assignmentAttempt: { N: assignmentDetails.attempt},
-      assignmentNumber:  { S: assignmentDetails.id},
-      emailSent: { B: status},
+      assignmentAttempt: { N: assignmentDetails.attempt.toString() },
+      assignmentNumber:  { S: assignmentDetails.id },
+      emailSent: { S: status },
     },
   };
 
@@ -57,30 +58,28 @@ async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email
       console.log('6. Starting filestream');
       fileStream.pipe(stream)
         .on('error', async (error) => {
-          await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
+          // await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
           reject(`Error uploading file: ${error.message}`);
         })
         .on('finish', async () => {
           console.log('7. finishing GCP upload');
           console.log(`File uploaded to: gs://${bucketName}/${newBucketPath}`);
           try {
-            await sendEmail(email, 'successful-download', {assignmentNumber: assignmentDetails.name, bucketPath: `gs://${bucketName}/${gcpDestinationPath}`});
+            await sendEmail(email, 'successful-download', {assignmentNumber: assignmentDetails.name, bucketPath: `gs://${bucketName}/${newBucketPath}`});
             console.log('10. Starting update to DynamoDB');
           } catch(errror){
-            await updateDynamoDB(email, assignmentDetails, false);
+            await updateDynamoDB(email, assignmentDetails, 'unable-to-download');
           }
           try {
-            await updateDynamoDB(email, assignmentDetails, true);
+            await updateDynamoDB(email, assignmentDetails, 'success');
             console.log('NN. Dynamo successfully resolved');
             resolve();
           } catch (error) {
-            await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
             reject(error);
           }
         });
     });
   } catch (error) {
-    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
     console.error(`Error uploading file: ${error}`);
     throw error;
   }
@@ -104,14 +103,13 @@ async function downloadGitHubRelease(fileUrl, destinationPath, email, assignment
       }
     } catch (error) {
       console.error(`Error checking file size: ${error.message}`);
-      return false; // Return false if there's an error (file not found, permission issue, etc.)
+      throw error;
     }
   
     console.log('4. Finishing download of zip file');
 
     return destinationPath;
   } catch (error) {
-    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
     throw `Error downloading file: ${error.message}`;
   }
 }
