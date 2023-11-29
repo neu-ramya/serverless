@@ -38,9 +38,17 @@ export const handler = async (event, context) => {
     let downloadURL = message.url;
     let email = message.email;
 
+    let attemptJson = {
+      limit: message.attempt.limit,
+      attemptCount: (parseInt(message.attempt.attemptCount)+1).toString(),
+    }
+
+    console.log("*************")
+    console.log(attemptJson)
+
     let assignmentDetails = {
       id: message.assignmentID,
-      attempt: message.attempt+1,
+      attempt: attemptJson,
       name: message.assignmentName,
       deadlineExceeded: message.deadlineExceeded,
       url: message.url,
@@ -56,7 +64,7 @@ export const handler = async (event, context) => {
       return;
     }
 
-    let attemptExceeded = (assignmentDetails.attempt.attemptCount >= assignmentDetails.attempt.limit);
+    let attemptExceeded = (assignmentDetails.attempt.attemptCount > assignmentDetails.attempt.limit);
 
     if(attemptExceeded) {
       await sendEmail(email, 'attempt-exceeded', { 
