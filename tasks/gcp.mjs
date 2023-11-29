@@ -114,7 +114,7 @@ async function downloadGitHubRelease(fileUrl, destinationPath, email, assignment
         submissionURL: assignmentDetails.url
       });
       await updateDynamoDB(email, assignmentDetails, 'invalid-submission');
-      return false;
+      return 'non-zip-file';
     }
   } catch(error) {
     console.log(`3.2 failed in zip type check`)
@@ -156,7 +156,7 @@ async function uploadToGCP(downloadURL, email, assignmentDetails) {
   console.log('2. Starting upload to GCP');
   try {
     const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME, email, assignmentDetails);
-    if(!downloadedZipFilePath){
+    if(!(downloadedZipFilePath === "non-zip-file")) {
       await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, email, assignmentDetails);
     }
   } catch (error) {
