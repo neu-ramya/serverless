@@ -99,7 +99,10 @@ async function downloadGitHubRelease(fileUrl, destinationPath, email, assignment
     try {
       const stats = await fsPromises.stat(destinationPath);
       if(stats.size === 0){
-        await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
+        await sendEmail(email, 'invalid-submission', {
+          assignmentNumber: assignmentDetails.name,
+          submissionURL: assignmentDetails.url
+        });
       }
     } catch (error) {
       console.error(`Error checking file size: ${error.message}`);
@@ -121,7 +124,10 @@ async function uploadToGCP(downloadURL, email, assignmentDetails) {
     const downloadedZipFilePath = await downloadGitHubRelease(downloadURL, LOCAL_ZIP_FILE_NAME, email, assignmentDetails);
     await moveFileToGCP(PROJECT_ID, BUCKET_NAME, GCP_KEY, downloadedZipFilePath, email, assignmentDetails);
   } catch (error) {
-    await sendEmail(email, 'failed-download', {assignmentNumber: assignmentDetails.name});
+    await sendEmail(email, 'failed-download', {
+      assignmentNumber: assignmentDetails.name,
+      submissionURL: assignmentDetails.url
+    });
     console.error(error);
     throw error;
   }

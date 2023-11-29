@@ -34,10 +34,30 @@ export const handler = async (event, context) => {
     console.log("1. Starting handler");
     let downloadURL = message.url;
     let email = message.email;
+
     let assignmentDetails = {
       id: message.assignmentID,
       attempt: message.attempt,
-      name: message.assignmentName
+      name: message.assignmentName,
+      deadlineExceeded: message.deadlineExceeded,
+      url: message.url,
+    }
+
+    if(assignmentDetails.deadlineExceeded){
+      await sendEmail(email, 'deadline-missed', { 
+        assignmentNumber: assignmentDetails.name,
+        deadline: 'DATE'
+      });
+      return;
+    }
+
+    let attemptExceeded = false
+    if(attemptExceeded) {
+      await sendEmail(email, 'attempt-exceeded', { 
+        assignmentNumber: assignmentDetails.name,
+        assignmentLimit: 999
+      });
+      return;
     }
 
     const gcpResponse = await uploadToGCP(downloadURL, email, assignmentDetails);
