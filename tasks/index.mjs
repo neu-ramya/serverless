@@ -1,6 +1,7 @@
 import util from 'util';
 import fs from 'fs';
 import path from 'path';
+import sendEmail from './mailgun.mjs';
 import uploadToGCP from "./gcp.mjs";
 
 const writeFileAsync = util.promisify(fs.writeFile);
@@ -51,11 +52,11 @@ export const handler = async (event, context) => {
       return;
     }
 
-    let attemptExceeded = false
+    let attemptExceeded = (attempt.attemptCount > attempt.limit);
     if(attemptExceeded) {
       await sendEmail(email, 'attempt-exceeded', { 
         assignmentNumber: assignmentDetails.name,
-        assignmentLimit: 999
+        assignmentLimit: attempt.limit
       });
       return;
     }
