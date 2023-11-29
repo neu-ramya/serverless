@@ -44,7 +44,7 @@ export const handler = async (event, context) => {
       name: message.assignmentName,
       deadlineExceeded: message.deadlineExceeded,
       url: message.url,
-      deadlineDate: deadlineDate.deadlineDate,
+      deadlineDate: message.deadlineDate,
     }
 
     if(assignmentDetails.deadlineExceeded){
