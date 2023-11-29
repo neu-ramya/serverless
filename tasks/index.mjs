@@ -40,7 +40,7 @@ export const handler = async (event, context) => {
 
     let assignmentDetails = {
       id: message.assignmentID,
-      attempt: message.attempt,
+      attempt: message.attempt+1,
       name: message.assignmentName,
       deadlineExceeded: message.deadlineExceeded,
       url: message.url,

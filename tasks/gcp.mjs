@@ -40,11 +40,8 @@ async function updateDynamoDB(emailID, assignmentDetails, status) {
 
 async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email, assignmentDetails) {
   let newBucketPath = `${assignmentDetails.name}/${assignmentDetails.id}/${email}/${assignmentDetails.attempt.attemptCount}/submission.zip`;
-
-  console.log('5.0 Checking file size');
-
-  await updateDynamoDB(email, assignmentDetails, 'failed-download');
   let fileSize = await fs.statSync(filePath);
+  console.log('5.0 Checking file size');
 
   if(fileSize.size === 0){
     console.log(`------ INSIDE file size check - ${fileSize.size} ------`)
