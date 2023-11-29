@@ -19,9 +19,10 @@ async function updateDynamoDB(emailID, assignmentDetails, status) {
     Item: {
       id: { S: uid }, 
       emailaddress: { S: emailID },
-      assignmentAttempt: { N: assignmentDetails.attempt.toString() },
+      assignmentAttempt: { N: assignmentDetails.attempt.attemptCount.toString() },
       assignmentNumber:  { S: assignmentDetails.id },
       emailSent: { S: status },
+      deadlineExceeded: { S: assignmentDetails.deadlineExceeded.toString() },
     },
   };
 
@@ -38,7 +39,7 @@ async function updateDynamoDB(emailID, assignmentDetails, status) {
 }
 
 async function moveFileToGCP(projectId, bucketName, keyFilename, filePath, email, assignmentDetails) {
-  let newBucketPath = `${assignmentDetails.name}/${assignmentDetails.id}/${email}/${assignmentDetails.attempt}/submission.zip`
+  let newBucketPath = `${assignmentDetails.name}/${assignmentDetails.id}/${email}/${assignmentDetails.attempt.attemptCount}/submission.zip`;
 
   console.log('5. Starting move to GCP');
 
@@ -133,4 +134,7 @@ async function uploadToGCP(downloadURL, email, assignmentDetails) {
   }
 }
 
-export default uploadToGCP;
+export default { 
+  uploadToGCP: uploadToGCP,
+  updateDynamoDB: updateDynamoDB,
+}
